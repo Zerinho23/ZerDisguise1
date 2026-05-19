@@ -387,6 +387,7 @@ public class LibsDisguises extends JavaPlugin {
             ex.printStackTrace();
         }
 
+        me.libraryaddict.disguise.gui.DisguiseGUI.setPlugin(this);
         Bukkit.getPluginManager().registerEvents(new MenuListener(), this);
     }
 
