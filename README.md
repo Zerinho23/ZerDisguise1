@@ -1,6 +1,32 @@
-# LibsDisguises
+# ZerDisguise
 
-Uno de los mejores plugins de disfraces para servidores Minecraft. Permite que jugadores y entidades se disfracen como cualquier mob, jugador u objeto del juego, con un nivel de personalización altísimo gracias a su sistema de "watchers" por entidad.
+Plugin de disfraces para servidores Minecraft basado en LibsDisguises v11.0.18. Permite que jugadores y entidades se disfracen como cualquier mob, jugador u objeto del juego — ahora con **menú gráfico interactivo** para facilitar el uso.
+
+---
+
+## ✨ Novedad: Menú GUI Interactivo
+
+Esta versión añade un menú gráfico completo accesible con un solo comando. No hace falta conocer los comandos de texto.
+
+### Uso
+```
+/disguisemenu
+/dmenu
+/disgmenu
+```
+
+### Menús disponibles
+| Menú | Descripción |
+|---|---|
+| 🐾 **Mobs** | Todos los tipos de mobs paginados (Zombie, Creeper, etc.) |
+| 🎭 **Misceláneos** | Entidades especiales (Armor Stand, Item Frame, TNT...) |
+| 👤 **Jugadores** | Cabezas de jugadores en línea para disfrazarse como ellos |
+| 🔮 **Mi Disfraz** | Ver tu disfraz activo y quitarlo fácilmente |
+
+### Permiso requerido
+```
+libsdisguises.menu   (por defecto: solo ops)
+```
 
 ---
 
@@ -17,37 +43,10 @@ Uno de los mejores plugins de disfraces para servidores Minecraft. Permite que j
 ## Instalación
 
 1. Descarga **PacketEvents** y colócalo en tu carpeta `plugins/`
-2. Descarga **LibsDisguises** desde [SpigotMC](https://www.spigotmc.org/resources/32453/) o desde [Jenkins](https://ci.lib.co.nz/job/LibsDisguises/)
+2. Descarga el JAR desde la sección [Releases](https://github.com/Zerinho23/ZerDisguise1/releases)
 3. Coloca el JAR en `plugins/`
 4. Reinicia el servidor
 5. (Opcional) Edita `plugins/LibsDisguises/config.yml` según tus preferencias
-
----
-
-## ¿Qué puede hacer este plugin?
-
-### Disfraces disponibles
-El plugin soporta más de **130 tipos de entidades**, incluyendo todos los mobs modernos:
-
-| Categoría | Ejemplos |
-|---|---|
-| Mobs pasivos | Vaca, Cerdo, Oveja, Pollo, Conejo, Armadillo, Camello... |
-| Mobs neutrales | Lobo, Abeja, Enderman, Gólem de Hierro... |
-| Mobs hostiles | Creeper, Esqueleto, Zombie, Breeze, Warden, Creaking... |
-| Jefes | Dragón del End, Wither, Elder Guardian |
-| Jugadores | Cualquier skin de jugador real o personalizado via MineSkin |
-| Objetos/misc | Bloque cayendo, Marco de objeto, Estante de armadura, TNT... |
-| Entidades moduladas | Soporte para mobs de mods (Modded Living / Modded Misc) |
-
-### Personalización por entidad
-Cada disfraz tiene propiedades únicas modificables, como por ejemplo:
-- **Creeper:** activado/desactivado, tamaño de explosión
-- **Oveja:** color de lana, esquilada o no
-- **Caballo:** color, marcas, silla, equipamiento
-- **Lobo:** domado, enojado, collar de color
-- **Villager:** profesión, nivel, tipo de bioma
-- **Display entities:** texto, bloques, objetos con transformaciones
-- Y muchas más según el mob
 
 ---
 
@@ -55,23 +54,18 @@ Cada disfraz tiene propiedades únicas modificables, como por ejemplo:
 
 | Comando | Descripción |
 |---|---|
+| `/disguisemenu` | Abre el menú gráfico de disfraces (nuevo) |
 | `/disguise <tipo> [opciones]` | Te disfrazas a ti mismo |
-| `/disguiseplayer <jugador> <tipo> [opciones]` | Disfrazas a otro jugador |
-| `/disguiseentity <tipo> [opciones]` | Disfrazas la entidad que estás mirando |
-| `/disguiseradius <radio> <tipo> [opciones]` | Disfrazas todas las entidades en un radio |
-| `/disguiseselector <selector> <tipo> [opciones]` | Disfrazas entidades por selector (`@a`, `@e`, etc.) |
+| `/disguiseplayer <jugador> <tipo>` | Disfrazas a otro jugador |
+| `/disguiseentity <tipo>` | Disfrazas la entidad que estás mirando |
+| `/disguiseradius <radio> <tipo>` | Disfrazas entidades en un radio |
 | `/undisguise` | Quitas tu propio disfraz |
 | `/undisguiseplayer <jugador>` | Quitas el disfraz de otro jugador |
-| `/undisguiseentity` | Quitas el disfraz de la entidad que miras |
-| `/undisguiseradius <radio>` | Quitas disfraces en un radio |
-| `/undisguiseselector <selector>` | Quitas disfraces por selector |
 | `/disguisemodify <opciones>` | Modificas tu disfraz activo |
-| `/disguisemodifyplayer <jugador> <opciones>` | Modificas el disfraz activo de otro jugador |
-| `/disguiseanimate <animación>` | Ejecutas una animación en tu disfraz |
 | `/disguiseviewself` | Activas/desactivas ver tu propio disfraz |
-| `/libsdisguises reload` | Recargas la configuración del plugin |
+| `/libsdisguises reload` | Recargas la configuración |
 
-**Aliases útiles:** `/d`, `/dis`, `/u`, `/und`
+**Aliases:** `/d`, `/dis`, `/u`, `/und`, `/dmenu`, `/disgmenu`
 
 ---
 
@@ -79,21 +73,34 @@ Cada disfraz tiene propiedades únicas modificables, como por ejemplo:
 
 | Permiso | Descripción | Default |
 |---|---|---|
-| `libsdisguises.disguise.*` | Acceso a todos los disfraces | op |
+| `libsdisguises.menu` | Acceso al menú GUI | op |
+| `libsdisguises.disguise.*` | Todos los disfraces | op |
 | `libsdisguises.disguise.mob.<tipo>` | Disfraz de un mob específico | op |
 | `libsdisguises.disguise.player` | Disfrazarse como jugador | op |
 | `libsdisguises.disguise.misc.<tipo>` | Disfraz de entidad misc | op |
 | `libsdisguises.undisguise` | Quitarse el propio disfraz | true |
 | `libsdisguises.undisguise.others` | Quitar el disfraz a otros | op |
-| `libsdisguises.disguiseradius` | Usar comando de radio | op |
-| `libsdisguises.seethrough` | Ver a través de los disfraces | false |
 | `libsdisguises.viewself` | Ver el propio disfraz | true |
+| `libsdisguises.seethrough` | Ver a través de los disfraces | false |
 
 ---
 
-## Disfraces personalizados
+## ¿Qué tipos de disfraz existen?
 
-Puedes guardar disfraces con nombre en `configs/disguises.yml` y asignarlos vía permisos:
+| Categoría | Ejemplos |
+|---|---|
+| Mobs pasivos | Vaca, Cerdo, Oveja, Pollo, Conejo, Armadillo, Camello... |
+| Mobs neutrales | Lobo, Abeja, Enderman, Gólem de Hierro... |
+| Mobs hostiles | Creeper, Esqueleto, Zombie, Breeze, Warden, Creaking... |
+| Jefes | Dragón del End, Wither, Elder Guardian |
+| Jugadores | Cualquier skin de jugador real o personalizado |
+| Misceláneos | Bloque cayendo, Marco de objeto, Estante de armadura, TNT... |
+
+---
+
+## Disfraces personalizados (archivo)
+
+Puedes guardar disfraces con nombre en `configs/disguises.yml`:
 
 ```yaml
 Disguises:
@@ -101,47 +108,29 @@ Disguises:
   rey_fantasma: "Player setGameProfile Notch setSkin skull"
 ```
 
-Luego se usan con `/disguise zombie_rapido` si el jugador tiene el permiso correspondiente.
+Se usan con `/disguise zombie_rapido` si el jugador tiene el permiso correspondiente.
 
 ---
 
 ## API para desarrolladores
-
-Agrega la dependencia a tu proyecto:
 
 ### Gradle
 ```groovy
 repositories {
     maven { url "https://mvn.lib.co.nz/public" }
 }
-
 dependencies {
-    implementation group: 'me.libraryaddict.disguises', name: 'libsdisguises', version: '11.0.18'
+    implementation group: "me.libraryaddict.disguises", name: "libsdisguises", version: "11.0.18"
 }
-```
-
-### Maven
-```xml
-<repository>
-    <id>libsdisguises-public</id>
-    <url>https://mvn.lib.co.nz/public/</url>
-</repository>
-
-<dependency>
-    <groupId>me.libraryaddict.disguises</groupId>
-    <artifactId>libsdisguises</artifactId>
-    <version>11.0.18</version>
-    <scope>provided</scope>
-</dependency>
 ```
 
 ### Ejemplo básico
 ```java
-// Disfrazar a un jugador como Creeper
+// Disfrazar como Creeper
 MobDisguise disguise = new MobDisguise(DisguiseType.CREEPER);
 DisguiseAPI.disguiseToAll(player, disguise);
 
-// Disfrazar como otro jugador con skin
+// Disfrazar como jugador con skin
 PlayerDisguise playerDisguise = new PlayerDisguise("Notch");
 DisguiseAPI.disguiseToAll(player, playerDisguise);
 
@@ -149,45 +138,23 @@ DisguiseAPI.disguiseToAll(player, playerDisguise);
 DisguiseAPI.undisguiseToAll(player);
 ```
 
-### Eventos disponibles
-```java
-@EventHandler
-public void onDisguise(DisguiseEvent event) {
-    Player player = (Player) event.getEntity();
-    Disguise disguise = event.getDisguise();
-    // event.setCancelled(true); para cancelar
-}
-
-@EventHandler
-public void onUndisguise(UndisguiseEvent event) { ... }
-
-@EventHandler
-public void onInteract(DisguiseInteractEvent event) { ... }
-```
-
 ---
 
 ## Links útiles
 
+- [Releases (descargas)](https://github.com/Zerinho23/ZerDisguise1/releases)
 - [Página en SpigotMC](https://www.spigotmc.org/resources/32453/)
 - [JavaDocs (API)](https://libraryaddict.github.io/LibsDisguises/javadoc/)
-- [Descargas Jenkins](https://ci.lib.co.nz/job/LibsDisguises/)
 - [PacketEvents (dependencia)](https://www.spigotmc.org/resources/packetevents-api.80279/)
 
 ---
 
 ## Reportar un bug
 
-Antes de abrir un issue, asegúrate de:
+Antes de abrir un issue:
 
-1. Incluir el **stack trace completo** del error (o descripción detallada del comportamiento incorrecto)
-2. Describir **paso a paso** cómo reproducirlo
-3. Indicar **versión de Minecraft, LibsDisguises y PacketEvents**
-4. Verificar que no hay errores al cargar el plugin (`/plugins`)
-5. Confirmar que estás usando la versión más reciente antes de reportar
+1. Incluye el **stack trace completo** del error
+2. Describe **paso a paso** cómo reproducirlo
+3. Indica **versión de Minecraft, plugin y PacketEvents**
+4. Confirma que estás usando la versión más reciente
 
----
-
-## Nota importante
-
-Este proyecto **no autoriza** modificar ni eludir el código que limita funciones a clientes de pago. Tampoco autoriza publicar dicho código modificado.
