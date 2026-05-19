@@ -33,12 +33,16 @@ jobs:
       - name: Build Plugin
         run: ./gradlew :shaded:shadowJar --no-daemon
 
+      - name: Listar JARs generados
+        run: find shaded/build/libs -name "*.jar" | sort
+
       - name: Encontrar JAR compilado
         id: find_jar
         run: |
-          JAR_PATH=$(find shaded/build/libs -name "*.jar" ! -name "*-all.jar" | head -1)
+          JAR_PATH=$(find shaded/build/libs -name "*.jar" | sort | tail -1)
           echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
           echo "jar_name=$(basename $JAR_PATH)" >> $GITHUB_OUTPUT
+          echo "JAR encontrado: $JAR_PATH"
 
       - name: Crear Release GitHub
         uses: softprops/action-gh-release@v2
