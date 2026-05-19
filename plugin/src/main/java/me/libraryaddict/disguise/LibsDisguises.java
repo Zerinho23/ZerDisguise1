@@ -32,7 +32,7 @@ import me.libraryaddict.disguise.commands.utils.DisguiseViewBarCommand;
 import me.libraryaddict.disguise.commands.utils.DisguiseViewSelfCommand;
 import me.libraryaddict.disguise.commands.utils.GrabHeadCommand;
 import me.libraryaddict.disguise.commands.utils.GrabSkinCommand;
-import me.libraryaddict.disguise.commands.utils.SaveDisguiseCommand;
+import me.libraryaddict.disguise.commands.utils.DisguiseMenuCommand;import me.libraryaddict.disguise.commands.utils.SaveDisguiseCommand;import me.libraryaddict.disguise.gui.MenuListener;
 import me.libraryaddict.disguise.disguisetypes.DisguiseRunnable;
 import me.libraryaddict.disguise.utilities.DisguiseUtilities;
 import me.libraryaddict.disguise.utilities.LibsPremium;
@@ -386,6 +386,8 @@ public class LibsDisguises extends JavaPlugin {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
+        Bukkit.getPluginManager().registerEvents(new MenuListener(), this);
     }
 
     @NotNull
@@ -543,7 +545,7 @@ public class LibsDisguises extends JavaPlugin {
         registerCommand("copydisguise", new CopyDisguiseCommand());
         registerCommand("grabskin", new GrabSkinCommand());
         registerCommand("savedisguise", new SaveDisguiseCommand());
-        registerCommand("grabhead", new GrabHeadCommand());
+        registerCommand("grabhead", new GrabHeadCommand());        registerCommand("disguisemenu", new DisguiseMenuCommand());
 
         unregisterCommands(false);
     }
