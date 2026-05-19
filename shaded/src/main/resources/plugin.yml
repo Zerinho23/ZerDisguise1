@@ -131,6 +131,10 @@ commands:
     aliases: [ grabskull, playerhead, savehead, gethead ]
     permission: libsdisguises.seecmd.grabhead
     description: Grab the head item of a skin, url or player
+  disguisemenu:
+    aliases: [ dmenu, disgmenu ]
+    permission: libsdisguises.menu
+    description: Abre el menu interactivo de disfraces.
 
 permissions:
   libsdisguises.reload:
@@ -280,3 +284,6 @@ permissions:
     description: See the /disguiseselectoranimation command in tab-completion
   libsdisguises.seecmd.disguiseentityanimation:
     description: See the /disguiseentityanimation command in tab-completion
+  libsdisguises.menu:
+    description: Permite abrir el menu interactivo de disfraces.
+    default: op
