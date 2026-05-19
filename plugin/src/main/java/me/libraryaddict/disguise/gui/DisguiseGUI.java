@@ -302,7 +302,7 @@ public class DisguiseGUI {
                 "§6§lDisfraz Actual",
                 "§7Estado: " + (isDisguised ? "§aActivo" : "§cInactivo")));
 
-        inv.setItem(13, buildItem(Material.EYE_OF_ENDER,
+        inv.setItem(13, buildItem(Material.ENDER_EYE,
                 "§e§lVer Mi Disfraz",
                 "§7Activa o desactiva ver",
                 "§7tu propio disfraz.",
