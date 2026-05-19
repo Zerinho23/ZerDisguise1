@@ -17,17 +17,23 @@ public class DisguiseGUI {
 
     public static final Map<UUID, String> OPEN_MENUS = new HashMap<>();
     public static final Map<UUID, Integer> MENU_PAGES = new HashMap<>();
+    // Usado para evitar que InventoryCloseEvent limpie el mapa al transitar entre menús
+    public static final Set<UUID> TRANSITIONING = Collections.synchronizedSet(new HashSet<>());
 
-    static final String MENU_MAIN = "main";
-    static final String MENU_MOBS = "mobs";
-    static final String MENU_MISC = "misc";
-    static final String MENU_PLAYERS = "players";
+    static final String MENU_MAIN       = "main";
+    static final String MENU_MOBS       = "mobs";
+    static final String MENU_MISC       = "misc";
+    static final String MENU_PLAYERS    = "players";
     static final String MENU_MY_DISGUISE = "mydisguise";
 
     private static final int ITEMS_PER_PAGE = 45;
 
-    private static List<DisguiseType> mobTypesCache = null;
+    private static List<DisguiseType> mobTypesCache  = null;
     private static List<DisguiseType> miscTypesCache = null;
+
+    // ─────────────────────────────────────────
+    //  CACHÉ DE TIPOS
+    // ─────────────────────────────────────────
 
     static List<DisguiseType> getMobTypes() {
         if (mobTypesCache == null) {
@@ -57,48 +63,54 @@ public class DisguiseGUI {
         return miscTypesCache;
     }
 
+    // ─────────────────────────────────────────
+    //  ICONO POR TIPO DE DISFRAZ
+    // ─────────────────────────────────────────
+
     static Material getIcon(DisguiseType type) {
         Material egg = Material.matchMaterial(type.name() + "_SPAWN_EGG");
         if (egg != null) return egg;
         switch (type.name()) {
-            case "PLAYER":           return Material.PLAYER_HEAD;
-            case "ARMOR_STAND":      return Material.ARMOR_STAND;
-            case "PAINTING":         return Material.PAINTING;
-            case "ITEM_FRAME":       return Material.ITEM_FRAME;
-            case "GLOW_ITEM_FRAME":  return Material.GLOW_ITEM_FRAME;
-            case "DROPPED_ITEM":     return Material.DIAMOND;
-            case "FALLING_BLOCK":    return Material.GRASS_BLOCK;
-            case "AREA_EFFECT_CLOUD":return Material.GLASS_BOTTLE;
-            case "ENDER_CRYSTAL":    return Material.END_CRYSTAL;
-            case "TNT":              return Material.TNT;
-            case "MINECART": case "CHEST_MINECART": case "HOPPER_MINECART":
-            case "FURNACE_MINECART": case "COMMAND_BLOCK_MINECART":
-                                     return Material.MINECART;
-            case "FIREBALL": case "SMALL_FIREBALL": case "DRAGON_FIREBALL":
-                                     return Material.FIRE_CHARGE;
-            case "SNOWBALL":         return Material.SNOWBALL;
-            case "EGG":              return Material.EGG;
-            case "ENDER_PEARL":      return Material.ENDER_PEARL;
-            case "EXPERIENCE_ORB":   return Material.EXPERIENCE_BOTTLE;
-            case "WITHER_SKULL":     return Material.WITHER_SKELETON_SKULL;
-            case "ARROW": case "SPECTRAL_ARROW": case "TIPPED_ARROW":
-                                     return Material.ARROW;
-            case "SHULKER_BULLET":   return Material.MAGENTA_SHULKER_BOX;
-            case "BLOCK_DISPLAY": case "ITEM_DISPLAY": case "TEXT_DISPLAY":
-            case "INTERACTION":      return Material.COMMAND_BLOCK;
-            default:                 return Material.SPAWNER;
+            case "PLAYER":            return Material.PLAYER_HEAD;
+            case "ARMOR_STAND":       return Material.ARMOR_STAND;
+            case "PAINTING":          return Material.PAINTING;
+            case "ITEM_FRAME":        return Material.ITEM_FRAME;
+            case "GLOW_ITEM_FRAME":   return Material.GLOW_ITEM_FRAME;
+            case "DROPPED_ITEM":      return Material.DIAMOND;
+            case "FALLING_BLOCK":     return Material.GRASS_BLOCK;
+            case "AREA_EFFECT_CLOUD": return Material.GLASS_BOTTLE;
+            case "ENDER_CRYSTAL":     return Material.END_CRYSTAL;
+            case "TNT":               return Material.TNT;
+            case "MINECART":
+            case "CHEST_MINECART":
+            case "FURNACE_MINECART":  return Material.MINECART;
+            case "FIREBALL":          return Material.FIRE_CHARGE;
+            case "SNOWBALL":          return Material.SNOWBALL;
+            case "EGG":               return Material.EGG;
+            case "ENDER_PEARL":       return Material.ENDER_PEARL;
+            case "EXPERIENCE_ORB":    return Material.EXPERIENCE_BOTTLE;
+            case "WITHER_SKULL":      return Material.WITHER_SKELETON_SKULL;
+            case "ARROW":
+            case "SPECTRAL_ARROW":    return Material.ARROW;
+            case "SHULKER_BULLET":    return Material.MAGENTA_SHULKER_BOX;
+            case "INTERACTION":       return Material.COMMAND_BLOCK;
+            default:                  return Material.SPAWNER;
         }
     }
 
     static String formatName(DisguiseType type) {
-        String raw = type.name().replace("_", " ").toLowerCase(Locale.ENGLISH);
+        String raw = type.name().toLowerCase(Locale.ENGLISH).replace('_', ' ');
         StringBuilder sb = new StringBuilder();
         for (String word : raw.split(" ")) {
-            if (sb.length() > 0) sb.append(" ");
-            if (!word.isEmpty()) sb.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
         }
         return sb.toString();
     }
+
+    // ─────────────────────────────────────────
+    //  UTILIDADES DE ITEMS
+    // ─────────────────────────────────────────
 
     static ItemStack buildItem(Material material, String name, String... lore) {
         ItemStack item = new ItemStack(material);
@@ -131,11 +143,26 @@ public class DisguiseGUI {
     }
 
     // ─────────────────────────────────────────
+    //  APERTURA SEGURA DE INVENTARIO
+    //  Marca al jugador como "transitando" para
+    //  que InventoryCloseEvent no limpie el mapa
+    // ─────────────────────────────────────────
+
+    private static void openSafe(Player player, Inventory inv, String menuKey, int page) {
+        UUID id = player.getUniqueId();
+        TRANSITIONING.add(id);
+        player.openInventory(inv);
+        TRANSITIONING.remove(id);
+        OPEN_MENUS.put(id, menuKey);
+        MENU_PAGES.put(id, page);
+    }
+
+    // ─────────────────────────────────────────
     //  MENÚ PRINCIPAL
     // ─────────────────────────────────────────
 
     public static void openMainMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 54, "§8§l✦ §r§6LibsDisguises §7- §fMenú §8§l✦");
+        Inventory inv = Bukkit.createInventory(null, 54, "§8§l✦ §r§6LibsDisguises §7- §fMenu §8§l✦");
         fillBorder(inv);
         for (int i = 10; i <= 43; i++) {
             if (inv.getItem(i) == null) inv.setItem(i, glassBlack());
@@ -146,21 +173,21 @@ public class DisguiseGUI {
                 "§7Disfrazarte como cualquier",
                 "§7criatura del juego.",
                 "",
-                "§e▶ Clic para abrir"));
+                "§e> Clic para abrir"));
 
         inv.setItem(22, buildItem(Material.PLAYER_HEAD,
                 "§b§l» Jugadores",
                 "§7Disfrazarte como un jugador",
                 "§7online o por nombre.",
                 "",
-                "§e▶ Clic para abrir"));
+                "§e> Clic para abrir"));
 
         inv.setItem(24, buildItem(Material.ITEM_FRAME,
                 "§d§l» Objetos y Misc",
                 "§7Disfrazarte como objetos,",
                 "§7proyectiles y entidades especiales.",
                 "",
-                "§e▶ Clic para abrir"));
+                "§e> Clic para abrir"));
 
         boolean isDisguised = DisguiseAPI.isDisguised(player);
 
@@ -169,7 +196,7 @@ public class DisguiseGUI {
                     "§6§l» Mi Disfraz",
                     "§7Gestionar tu disfraz activo.",
                     "",
-                    "§e▶ Clic para abrir"));
+                    "§e> Clic para abrir"));
         }
 
         inv.setItem(49, isDisguised
@@ -177,14 +204,12 @@ public class DisguiseGUI {
                         "§c§l» Quitar Disfraz",
                         "§7Elimina tu disfraz actual.",
                         "",
-                        "§e▶ Clic para quitarlo")
+                        "§e> Clic para quitarlo")
                 : buildItem(Material.GRAY_DYE,
                         "§7Sin disfraz activo",
                         "§8Equipa un disfraz primero."));
 
-        player.openInventory(inv);
-        OPEN_MENUS.put(player.getUniqueId(), MENU_MAIN);
-        MENU_PAGES.put(player.getUniqueId(), 0);
+        openSafe(player, inv, MENU_MAIN, 0);
     }
 
     // ─────────────────────────────────────────
@@ -207,13 +232,11 @@ public class DisguiseGUI {
                     "§a" + formatName(type),
                     "§7Tipo: §fMob",
                     "",
-                    "§e▶ Clic para disfrazarte"));
+                    "§e> Clic para disfrazarte"));
         }
 
         buildNavRow(inv, page, totalPages, types.size());
-        player.openInventory(inv);
-        OPEN_MENUS.put(player.getUniqueId(), MENU_MOBS);
-        MENU_PAGES.put(player.getUniqueId(), page);
+        openSafe(player, inv, MENU_MOBS, page);
     }
 
     // ─────────────────────────────────────────
@@ -236,13 +259,11 @@ public class DisguiseGUI {
                     "§d" + formatName(type),
                     "§7Tipo: §fMisc",
                     "",
-                    "§e▶ Clic para disfrazarte"));
+                    "§e> Clic para disfrazarte"));
         }
 
         buildNavRow(inv, page, totalPages, types.size());
-        player.openInventory(inv);
-        OPEN_MENUS.put(player.getUniqueId(), MENU_MISC);
-        MENU_PAGES.put(player.getUniqueId(), page);
+        openSafe(player, inv, MENU_MISC, page);
     }
 
     // ─────────────────────────────────────────
@@ -273,16 +294,14 @@ public class DisguiseGUI {
                 meta.setLore(Arrays.asList(
                         "§7Disfrazarte como este jugador.",
                         "",
-                        "§e▶ Clic para disfrazarte"));
+                        "§e> Clic para disfrazarte"));
                 head.setItemMeta(meta);
             }
             inv.setItem(i - start, head);
         }
 
         buildNavRow(inv, page, totalPages, online.size());
-        player.openInventory(inv);
-        OPEN_MENUS.put(player.getUniqueId(), MENU_PLAYERS);
-        MENU_PAGES.put(player.getUniqueId(), page);
+        openSafe(player, inv, MENU_PLAYERS, page);
     }
 
     // ─────────────────────────────────────────
@@ -307,30 +326,28 @@ public class DisguiseGUI {
                 "§7Activa o desactiva ver",
                 "§7tu propio disfraz.",
                 "",
-                "§e▶ Clic para alternar"));
+                "§e> Clic para alternar"));
 
         if (isDisguised) {
             inv.setItem(15, buildItem(Material.BOOK,
                     "§b§lClonar Disfraz",
                     "§7Copia tu disfraz para",
-                    "§7usarlo después.",
+                    "§7usarlo despues.",
                     "",
-                    "§e▶ Clic para clonar"));
+                    "§e> Clic para clonar"));
 
             inv.setItem(22, buildItem(Material.BARRIER,
                     "§c§lQuitar Disfraz",
                     "§7Elimina tu disfraz activo.",
                     "",
-                    "§e▶ Clic para quitarlo"));
+                    "§e> Clic para quitarlo"));
         }
 
         inv.setItem(18, buildItem(Material.ARROW,
-                "§7§l« Volver al Menú",
-                "§7Regresar al menú principal."));
+                "§7§l« Volver al Menu",
+                "§7Regresar al menu principal."));
 
-        player.openInventory(inv);
-        OPEN_MENUS.put(player.getUniqueId(), MENU_MY_DISGUISE);
-        MENU_PAGES.put(player.getUniqueId(), 0);
+        openSafe(player, inv, MENU_MY_DISGUISE, 0);
     }
 
     // ─────────────────────────────────────────
@@ -343,19 +360,19 @@ public class DisguiseGUI {
         if (menu == null) return;
 
         switch (menu) {
-            case MENU_MAIN:        handleMainClick(player, slot);         break;
-            case MENU_MOBS:        handleListClick(player, slot, page, MENU_MOBS);   break;
-            case MENU_MISC:        handleListClick(player, slot, page, MENU_MISC);   break;
-            case MENU_PLAYERS:     handlePlayerClick(player, slot, page); break;
-            case MENU_MY_DISGUISE: handleMyDisguiseClick(player, slot);   break;
+            case MENU_MAIN:        handleMainClick(player, slot);                    break;
+            case MENU_MOBS:        handleListClick(player, slot, page, MENU_MOBS);  break;
+            case MENU_MISC:        handleListClick(player, slot, page, MENU_MISC);  break;
+            case MENU_PLAYERS:     handlePlayerClick(player, slot, page);           break;
+            case MENU_MY_DISGUISE: handleMyDisguiseClick(player, slot);             break;
         }
     }
 
     private static void handleMainClick(Player player, int slot) {
         switch (slot) {
-            case 20: openMobMenu(player, 0); break;
+            case 20: openMobMenu(player, 0);    break;
             case 22: openPlayerMenu(player, 0); break;
-            case 24: openMiscMenu(player, 0); break;
+            case 24: openMiscMenu(player, 0);   break;
             case 31:
                 if (DisguiseAPI.isDisguised(player)) openMyDisguiseMenu(player);
                 break;
@@ -400,9 +417,9 @@ public class DisguiseGUI {
                 .collect(Collectors.toList());
         int totalPages = Math.max(1, (int) Math.ceil((double) online.size() / ITEMS_PER_PAGE));
 
-        if (slot == 45 && page > 0)             { openPlayerMenu(player, page - 1); return; }
-        if (slot == 48)                          { openMainMenu(player); return; }
-        if (slot == 53 && page < totalPages - 1) { openPlayerMenu(player, page + 1); return; }
+        if (slot == 45 && page > 0)              { openPlayerMenu(player, page - 1); return; }
+        if (slot == 48)                           { openMainMenu(player); return; }
+        if (slot == 53 && page < totalPages - 1)  { openPlayerMenu(player, page + 1); return; }
         if (slot >= 45) return;
 
         int index = page * ITEMS_PER_PAGE + slot;
@@ -416,30 +433,30 @@ public class DisguiseGUI {
     private static void handleMyDisguiseClick(Player player, int slot) {
         switch (slot) {
             case 13: player.closeInventory(); player.performCommand("disguiseviewself"); break;
-            case 15: player.closeInventory(); player.performCommand("disguiseclone"); break;
-            case 22: player.closeInventory(); player.performCommand("undisguise"); break;
+            case 15: player.closeInventory(); player.performCommand("disguiseclone");    break;
+            case 22: player.closeInventory(); player.performCommand("undisguise");       break;
             case 18: openMainMenu(player); break;
         }
     }
 
     // ─────────────────────────────────────────
-    //  UTILIDADES COMPARTIDAS
+    //  FILA DE NAVEGACIÓN (paginas)
     // ─────────────────────────────────────────
 
     private static void buildNavRow(Inventory inv, int page, int totalPages, int total) {
         for (int i = 45; i < 54; i++) inv.setItem(i, glass());
         if (page > 0) {
             inv.setItem(45, buildItem(Material.ARROW,
-                    "§f§l◀ Página anterior", "§7Ir a la página " + page));
+                    "§f§l< Pagina anterior", "§7Ir a la pagina " + page));
         }
         inv.setItem(48, buildItem(Material.BARRIER,
-                "§c§l✖ Volver al menú", "§7Regresar al menú principal."));
+                "§c§lX Volver al menu", "§7Regresar al menu principal."));
         inv.setItem(49, buildItem(Material.PAPER,
-                "§f§lPágina §e" + (page + 1) + " §fde §e" + totalPages,
+                "§f§lPagina §e" + (page + 1) + " §fde §e" + totalPages,
                 "§7Total: §f" + total + " elementos"));
         if (page < totalPages - 1) {
             inv.setItem(53, buildItem(Material.ARROW,
-                    "§f§lPágina siguiente ▶", "§7Ir a la página " + (page + 2)));
+                    "§f§lPagina siguiente >", "§7Ir a la pagina " + (page + 2)));
         }
     }
 }
