@@ -33,39 +33,50 @@ jobs:
       - name: Build Plugin
         run: ./gradlew :shaded:shadowJar :shaded:compileShadedFiles --no-daemon
 
-      - name: Encontrar JAR compilado
+      - name: Renombrar JAR a ZerDisguise.jar
         id: find_jar
         run: |
-          JAR_PATH=$(find shaded/build/libs -name "*.jar" | sort | tail -1)
-          echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
-          echo "jar_name=$(basename $JAR_PATH)" >> $GITHUB_OUTPUT
-          echo "JAR encontrado: $JAR_PATH ($(du -sh $JAR_PATH | cut -f1))"
+          ORIG=$(find shaded/build/libs -name "*.jar" | sort | tail -1)
+          cp "$ORIG" shaded/build/libs/ZerDisguise.jar
+          echo "jar_path=shaded/build/libs/ZerDisguise.jar" >> $GITHUB_OUTPUT
+          echo "JAR listo: $(du -sh shaded/build/libs/ZerDisguise.jar | cut -f1)"
+
+      - name: Eliminar releases anteriores
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release list --limit 20 --json tagName -q '.[].tagName' | \
+          while read tag; do
+            echo "Eliminando release: $tag"
+            gh release delete "$tag" --yes --cleanup-tag 2>/dev/null || true
+          done
 
       - name: Crear Release GitHub
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "v${{ github.run_number }}-menu-gui"
-          name: "ZerDisguise - Menú GUI Interactivo (Build ${{ github.run_number }})"
+          name: "ZerDisguise v${{ github.run_number }} — Menu GUI Interactivo"
           body: |
-            ## ZerDisguise con Menú GUI Interactivo
+            ## ZerDisguise — Menu GUI Interactivo
 
-            ### Nuevas funciones añadidas:
-            - `/disguisemenu` (`/dmenu`, `/disgmenu`) — Abre el menú principal con 54 slots
-            - Menú de **Mobs** paginado (todos los tipos de disfraces de mob)
-            - Menú de **Misceláneos** paginado
-            - Menú de **Jugadores** (cabezas de jugadores en línea como ítems)
-            - Menú de **Mi Disfraz** — ver y quitar el disfraz activo
-            - Todas las acciones usan `performCommand()` sobre los comandos existentes
+            ### Que incluye esta version:
+            - `/disguisemenu` — Abre el menu principal de disfraces
+            - Menu de **Mobs** paginado (todos los tipos de mob)
+            - Menu de **Jugadores** — online y **offline por nombre**
+            - Menu de **Objetos/Misc** paginado
+            - **Quitar disfraz** desde el menu principal (siempre visible)
+            - **Jugador offline**: escribe el nombre en el chat tras hacer clic
+            - Corregido error `IncompatibleClassChangeError` con `InventoryView` en Paper 1.20.4
+            - Corregido: clics ahora funcionan gracias al scheduler de Bukkit
 
             ### Permiso requerido:
             - `libsdisguises.menu` — por defecto: op
 
-            ### Instalación:
-            1. Descarga el JAR adjunto
-            2. Ponlo en tu carpeta `plugins/`
+            ### Instalacion:
+            1. Descarga `ZerDisguise.jar`
+            2. Coloca el archivo en la carpeta `plugins/`
             3. Reinicia el servidor
-
-            Basado en LibsDisguises v11.0.18
           files: ${{ steps.find_jar.outputs.jar_path }}
           draft: false
           prerelease: false
+
